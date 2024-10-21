@@ -2,6 +2,7 @@
 R_b = 10; % Radius of base
 R_a = 7; % Radius of arm
 R_l = 3; % Radius of link
+R_e = 10; % Radius of end effector
 
 % Height of Cylinder
 H_b = 10; % Height of base
@@ -20,6 +21,7 @@ theta3 = deg2rad(60);
 [x_l1, y_l1, z_l1] = cylinder(R_l);
 [x_l2, y_l2, z_l2] = cylinder(R_l);
 [x_l3, y_l3, z_l3] = cylinder(R_l);
+[x_e, y_e, z_e] = cylinder(R_e);
 
 % Scale the cylinders to the desired heights
 z_b = z_b * H_b;
@@ -46,12 +48,16 @@ Matrix_Link3 = [cos(theta3), -sin(theta3), 0, H_l*cos(theta3);
     sin(theta3), cos(theta3), 0, H_l*sin(theta3);
     0, 0, 1, 0;
     0, 0, 0, 1];
+
 % Rotation Y matrix
 rotY = [cos(pi/2),  0, sin(pi/2), 0;
     0,          1, 0,         0;
     -sin(pi/2), 0, cos(pi/2), 0;
     0,          0, 0,         1];
 
+% Position of Effector
+T_e = eye(4)*Matrix_Link1*Matrix_Link2*Matrix_Link3;
+O_e = T_e(1:3, 4);
 
 % Visualization
 figure;
@@ -88,7 +94,7 @@ end
 % Link arm 1 and link 2
 for j = 1:length(x_l2)
     for i = 1:2
-        Pos1 = [x_l2(i, j); y_l2(i, j); z_l2(i, j) - R_a- H_l/2; 1];
+        Pos1 = [x_l2(i, j); y_l2(i, j); z_l2(i, j) - H_l; 1];
         Pos2 = Matrix_Link1 * Matrix_Link2 * rotY * Pos1;
         x_l2(i, j) = Pos2(1);
         y_l2(i, j) = Pos2(2);
@@ -110,7 +116,7 @@ end
 % Link arm 2 and link 3
 for j = 1:length(x_l3)
     for i = 1:2
-        Pos1 = [x_l3(i, j); y_l3(i, j); z_l3(i, j) - R_a- H_l/2; 1];
+        Pos1 = [x_l3(i, j); y_l3(i, j); z_l3(i, j) - H_l; 1];
         Pos2 = Matrix_Link1 * Matrix_Link2 * Matrix_Link3 * rotY * Pos1;
         x_l3(i, j) = Pos2(1);
         y_l3(i, j) = Pos2(2);
@@ -148,6 +154,9 @@ fill3(x_a2(2,:), y_a2(2,:), z_a2(2,:), 'c');
 surf(x_l3, y_l3, z_l3, 'FaceColor', 'magenta', 'EdgeColor', 'none');
 fill3(x_l3(1,:), y_l3(1,:), z_l3(1,:), 'm');
 fill3(x_l3(2,:), y_l3(2,:), z_l3(2,:), 'm');
+
+% O_e
+plot3(O_e(1), O_e(2), O_e(3), 'ro', 'MarkerSize', 20, 'MarkerFaceColor', 'r');
 
 % Adjust the coodinate space
 xlim([-80 80]);
